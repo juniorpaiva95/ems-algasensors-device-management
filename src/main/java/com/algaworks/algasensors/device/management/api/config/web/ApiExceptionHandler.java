@@ -1,10 +1,11 @@
 package com.algaworks.algasensors.device.management.api.config.web;
 
 import com.algaworks.algasensors.device.management.api.client.SensorMonitoringClientBadGatewayException;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ProblemDetail;
+import org.springframework.beans.TypeMismatchException;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.io.IOException;
@@ -40,6 +41,19 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         problemDetail.setType(URI.create("/errors/bad-gateway"));
 
         return problemDetail;
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleTypeMismatch(
+            TypeMismatchException ex, HttpHeaders headers,
+            HttpStatusCode status, WebRequest request) {
+
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        problemDetail.setTitle("Parâmetro inválido");
+        problemDetail.setDetail("O ID informado não é um TSID válido.");
+        problemDetail.setType(URI.create("/errors/invalid-parameter"));
+
+        return handleExceptionInternal(ex, problemDetail, headers, status, request);
     }
 
 }
